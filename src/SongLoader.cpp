@@ -21,9 +21,9 @@
 static ModInfo modInfo;
 rapidjson::Document d;
 
-const Logger& getLogger() {
-    static const Logger logger(modInfo, LoggerOptions(false, false));
-    return logger;
+Logger& getLogger() {
+    auto* logger = new Logger(modInfo, LoggerOptions(false, false));
+    return *logger;
 }
 //Hash,ExtraSongData
 std::map<std::string, ExtraSongData> DataCache;
@@ -488,14 +488,14 @@ DifficultyData RetrieveDifficultyData(CustomDifficultyBeatmap* beatmap)
 {
     CustomBeatmapLevel* level = reinterpret_cast<CustomBeatmapLevel*>(beatmap->get_level());
     if (!level) {
-        getLogger().warning("Cannot retrieve difficulty data for custom song: this beatmap does not contain a valid level!");
+        ::getLogger().warning("Cannot retrieve difficulty data for custom song: this beatmap does not contain a valid level!");
         return {};
     }
 
     ExtraSongData songData = RetrieveExtraSongData(to_utf8(csstrtostr(level->levelID)), to_utf8(csstrtostr(level->customLevelPath)));
     CustomDifficultyBeatmapSet* ParentSet = reinterpret_cast<CustomDifficultyBeatmapSet*>(beatmap->parentDifficultyBeatmapSet);
     if (!ParentSet) {
-        getLogger().warning("Cannot retrieve difficulty data for custom song: this beatmap does not have parent difficulty beatmap set!");
+        ::getLogger().warning("Cannot retrieve difficulty data for custom song: this beatmap does not have parent difficulty beatmap set!");
         return {};
     }
 
@@ -559,7 +559,7 @@ MAKE_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, void, StandardLevel
         return;
     }
 
-    getLogger().info("Refreshing custom level content...");
+    ::getLogger().info("Refreshing custom level content...");
     auto customDifficultyBeatmap = reinterpret_cast<CustomDifficultyBeatmap*>(originalDifficultyBeatmap);
     CustomPreviewBeatmapLevel* level = reinterpret_cast<CustomPreviewBeatmapLevel*>(customDifficultyBeatmap->get_level());
 
@@ -652,18 +652,19 @@ extern "C" void setup(ModInfo& info) {
 }
 
 extern "C" void load() {
-    LOG_INFO("Starting SongLoader installation...");
+    auto& l = ::getLogger();
+    l.info("Starting SongLoader installation...");
     il2cpp_functions::Init();
-    INSTALL_HOOK_OFFSETLESS(BeatmapLevelsModel_ClearLoadedBeatmapLevelsCaches, il2cpp_utils::FindMethodUnsafe("", "BeatmapLevelsModel", "ClearLoadedBeatmapLevelsCaches", 0));
-    INSTALL_HOOK_OFFSETLESS(BeatmapLevelsModel_ReloadCustomLevelPackCollectionAsync, il2cpp_utils::FindMethodUnsafe("", "BeatmapLevelsModel", "ReloadCustomLevelPackCollectionAsync", 1));
-    INSTALL_HOOK_OFFSETLESS(BeatmapLevelsModel_GetBeatmapLevelAsync, il2cpp_utils::FindMethodUnsafe("", "BeatmapLevelsModel", "GetBeatmapLevelAsync", 2));
-    INSTALL_HOOK_OFFSETLESS(BeatmapLevelsModel_UpdateAllLoadedBeatmapLevelPacks, il2cpp_utils::FindMethodUnsafe("", "BeatmapLevelsModel", "UpdateAllLoadedBeatmapLevelPacks", 0));
-    INSTALL_HOOK_OFFSETLESS(LevelFilteringNavigationController_SetupBeatmapLevelPacks, il2cpp_utils::FindMethodUnsafe("", "LevelFilteringNavigationController", "SetupBeatmapLevelPacks", 0));
-    INSTALL_HOOK_OFFSETLESS(FileHelpers_GetEscapedURLForFilePath, il2cpp_utils::FindMethodUnsafe("", "FileHelpers", "GetEscapedURLForFilePath", 1));
-    INSTALL_HOOK_OFFSETLESS(BeatmapCharacteristicCollectionSO_GetBeatmapCharacteristicBySerializedName, il2cpp_utils::FindMethodUnsafe("", "BeatmapCharacteristicCollectionSO", "GetBeatmapCharacteristicBySerializedName", 1));
-    INSTALL_HOOK_OFFSETLESS(StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
-    INSTALL_HOOK_OFFSETLESS(StandardLevelDetailViewController_UpdateActionButtonIntractability, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailViewController", "UpdateActionButtonIntractability", 0));
-    INSTALL_HOOK_OFFSETLESS(BeatmapDifficultyMethods_Name, il2cpp_utils::FindMethodUnsafe("", "BeatmapDifficultyMethods", "Name", 1));
+    INSTALL_HOOK_OFFSETLESS(l, BeatmapLevelsModel_ClearLoadedBeatmapLevelsCaches, il2cpp_utils::FindMethodUnsafe("", "BeatmapLevelsModel", "ClearLoadedBeatmapLevelsCaches", 0));
+    INSTALL_HOOK_OFFSETLESS(l, BeatmapLevelsModel_ReloadCustomLevelPackCollectionAsync, il2cpp_utils::FindMethodUnsafe("", "BeatmapLevelsModel", "ReloadCustomLevelPackCollectionAsync", 1));
+    INSTALL_HOOK_OFFSETLESS(l, BeatmapLevelsModel_GetBeatmapLevelAsync, il2cpp_utils::FindMethodUnsafe("", "BeatmapLevelsModel", "GetBeatmapLevelAsync", 2));
+    INSTALL_HOOK_OFFSETLESS(l, BeatmapLevelsModel_UpdateAllLoadedBeatmapLevelPacks, il2cpp_utils::FindMethodUnsafe("", "BeatmapLevelsModel", "UpdateAllLoadedBeatmapLevelPacks", 0));
+    INSTALL_HOOK_OFFSETLESS(l, LevelFilteringNavigationController_SetupBeatmapLevelPacks, il2cpp_utils::FindMethodUnsafe("", "LevelFilteringNavigationController", "SetupBeatmapLevelPacks", 0));
+    INSTALL_HOOK_OFFSETLESS(l, FileHelpers_GetEscapedURLForFilePath, il2cpp_utils::FindMethodUnsafe("", "FileHelpers", "GetEscapedURLForFilePath", 1));
+    INSTALL_HOOK_OFFSETLESS(l, BeatmapCharacteristicCollectionSO_GetBeatmapCharacteristicBySerializedName, il2cpp_utils::FindMethodUnsafe("", "BeatmapCharacteristicCollectionSO", "GetBeatmapCharacteristicBySerializedName", 1));
+    INSTALL_HOOK_OFFSETLESS(l, StandardLevelDetailView_RefreshContent, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailView", "RefreshContent", 0));
+    INSTALL_HOOK_OFFSETLESS(l, StandardLevelDetailViewController_UpdateActionButtonIntractability, il2cpp_utils::FindMethodUnsafe("", "StandardLevelDetailViewController", "UpdateActionButtonIntractability", 0));
+    INSTALL_HOOK_OFFSETLESS(l, BeatmapDifficultyMethods_Name, il2cpp_utils::FindMethodUnsafe("", "BeatmapDifficultyMethods", "Name", 1));
     baseProjectPath = il2cpp_utils::createcsstr(BASEPATH, il2cpp_utils::StringType::Manual);
-    LOG_INFO("Successfully installed SongLoader!");
+    l.info("Successfully installed SongLoader!");
 }

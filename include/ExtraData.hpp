@@ -227,7 +227,7 @@ struct ExtraSongData
         }
         catch(const std::exception& e)
         {
-            getLogger().error("Error getting extra data for " + songPath + " !");
+            ::getLogger().error("Error getting extra data for " + songPath + " !");
         }
         
     }
